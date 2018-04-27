@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import signal
 import sys
+import time
 import threading
 import serial
 
@@ -10,16 +11,19 @@ class EventBus:
         self.hooks = {}
 
     def on_event(self, event, hook_fn):
-        event_name = type(event).__name__
+        event_name = self.event_name(event)
         if event_name not in self.hooks:
             self.hooks[event_name] = []
         self.hooks[event_name].append(hook_fn)
 
     def emit(self, event):
-        event_name = type(event).__name__
+        event_name = self.event_name(event)
         if event_name in self.hooks:
             for hook in self.hooks[event_name]:
                 hook(event)
+
+    def event_name(self, v):
+        return v.__name__ if type(v) == type else type(v).__name__
 
 
 class RevolutionEvent:
@@ -35,7 +39,7 @@ class RevolutionPrinterListener:
         self.out_file = out_file
 
     def on_revolution(self, event):
-        self.out_file.write("Revolution @ %s" % event.timestamp.stftime('%H:%M:%S.%f'))
+        self.out_file.write("Revolution @ %s\n" % event.timestamp.strftime('%H:%M:%S.%f'))
 
 
 class SerialReaderThread(threading.Thread):
@@ -45,9 +49,11 @@ class SerialReaderThread(threading.Thread):
         self.stopper = threading.Event()
         self.events = event_bus
 
+        super(SerialReaderThread, self).__init__(name='serial-reader')
+
     def run(self):
         start_time = datetime.now()
-        self.serial.open()
+        #self.serial.open()
         while True:
             if self.stopped():
                 break
@@ -55,15 +61,15 @@ class SerialReaderThread(threading.Thread):
             line = self.serial.readline().decode()
             self.process_line(line, start_time)
 
-        self.serial.close()
+        #self.serial.close()
 
     def process_line(self, line, start_time):
         # Incoming lines are number of milliseconds elapsed since Arduino
         # program started running. In our case, we can base this off the time
         # we opened the serial connection. In practice, this overflows after
         # around 50 days.
-        microseconds = int(line.strip())
-        revolution_time = start_time + timedelta(microseconds)
+        milliseconds = int(line.strip())
+        revolution_time = start_time + timedelta(milliseconds=milliseconds)
 
         self.events.emit(RevolutionEvent(revolution_time))
 
@@ -97,11 +103,17 @@ def main():
     event_bus = EventBus()
     event_bus.on_event(RevolutionEvent, revolution_printer.on_revolution)
 
-    serial_reader = SerialReaderThread('/dev/ttyUSB0', 9600, event_revolution)
+    # mac: /dev/ttyUSB0
+    # rpi: /dev/ttyACM0
+    serial_reader = SerialReaderThread('/dev/ttyACM0', 9600, event_bus)
     cycle = Cycle(serial_reader)
 
     try:
         cycle.start()
     except KeyboardInterrupt:
+        print("Stopping...")
         cycle.stop()
+
+
+main()
 
