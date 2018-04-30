@@ -10,6 +10,7 @@ from .sensors import serial_reader
 from .logger import file_persister
 from .reporter import reporter_thread
 from .analysis import RevolutionCalculator
+from .stream import websocket_server
 
 def main():
     persist_file_path = os.path.join(os.path.dirname(__file__), 'persist.txt')
@@ -38,6 +39,10 @@ def main():
     reporter = threading.Thread(target=reporter_thread, args=(calc, timedelta(seconds=1)))
     reporter.daemon=True
     reporter.start()
+
+    ws = threading.Thread(target=websocket_server, args=(calc, '0.0.0.0', 8765))
+    ws.daemon = True
+    ws.start()
 
     try:
         while True:
