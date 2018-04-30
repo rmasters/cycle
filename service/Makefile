@@ -4,5 +4,5 @@ image:
 	docker build -t rmasters/cycle .
 
 run: image
-	docker run --rm rmasters/cycle
+	docker run --rm --device=/dev/cu.usbmodem1411 rmasters/cycle python cycles/__init__.py
 
