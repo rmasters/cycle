@@ -15,15 +15,14 @@ export default class Dashboard extends React.Component {
   }
 
   componentDidMount() {
-    const ws = new WebSocket("ws://192.168.1.112:8765/ws");
+    const ws = new WebSocket("ws://127.0.0.1:8765/ws");
     //const ws = new WebSocket("ws://localhost:8765/ws");
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.telemetry != null) {
-        //console.log(data.telemetry);
         this.setState({
-          speed: data.telemetry.speed.toFixed(1),
-          distance: data.telemetry.distance_travelled.toFixed(2),
+          speed: data.telemetry.km_per_hr.toFixed(1),
+          distance: data.telemetry.distance_travelled_km.toFixed(2),
           pace: moment.duration(data.telemetry.pace * 1000),
           rpm: data.telemetry.rpm.toFixed(0)
         });
