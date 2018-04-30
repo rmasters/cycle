@@ -1,4 +1,4 @@
-.PHONY: image
+.PHONY: image run
 
 image:
 	docker build -t rmasters/cycle .
