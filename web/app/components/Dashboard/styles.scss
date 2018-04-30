@@ -1,0 +1,38 @@
+.dashboard {
+    font: 3.00rem 'Space Mono', monospace;
+    height: 100%;
+    margin: 0;
+
+    background: #313851;
+    color: #BDC8D8;
+
+    display: flex;
+    align-items: center;
+}
+
+$highlight: #E9F1F2;
+
+.row {
+    display: flex;
+    width: 100%;
+}
+
+.stat {
+    width: 100%;
+    &__title {
+        font-size: 0.50em;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    &__unit {
+        font-size: 0.25em;
+    }
+
+    &__value {
+        color: $highlight;
+        text-align: center;
+        font-size: 2.00em;
+    }
+
+}
