@@ -13,7 +13,7 @@ from .analysis import RevolutionCalculator
 from .stream import websocket_server
 
 def main():
-    persist_file_path = os.path.join(os.path.dirname(__file__), 'persist.txt')
+    persist_file_path = os.path.expanduser('~/cycles.txt')
     persist_file = open(persist_file_path, 'a', buffering=1)
 
     log_queue = Queue()
