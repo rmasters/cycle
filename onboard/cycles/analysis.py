@@ -6,13 +6,18 @@ class RevolutionCalculator:
     def __init__(self, wheel_radius_cm):
         self.wheel_radius_cm = wheel_radius_cm
 
+        # Bit of a hack, this is to help account for momentum
+        # The original computer I am comparing to seems to be 7x distance
+        self.multiplier = 7.0
+
         self.revolutions = []
 
         self.setup()
 
     def setup(self):
-        self.wheel_circumference_cm = 2 * math.pi * self.wheel_radius_cm
-        self.rotation_distance_km = self.wheel_circumference_cm / 100000
+        wheel_circumference_cm = 2 * math.pi * self.wheel_radius_cm
+        wheel_circumference_km = wheel_circumference_cm / 100000
+        self.rotation_distance_km = wheel_circumference_km
 
     def record_revolutions(self, *args):
         self.revolutions.extend(args)
@@ -23,7 +28,7 @@ class RevolutionCalculator:
 
         # Get revolutions so far to calculate distance travelled in KM
         rotations = len(self.revolutions)
-        distance_travelled_km = self.rotation_distance_km * rotations
+        distance_travelled_km = self.rotation_distance_km * rotations * self.multiplier
 
         result = {
                 # Aggregate metrics
