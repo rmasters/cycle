@@ -6,7 +6,7 @@ from serial import Serial
 import os
 
 from .events import EventManager, RevolutionEvent
-from .sensors import serial_reader, gpio_poller
+from .sensors import GpioReader, SerialReader
 from .logger import file_persister
 from .reporter import reporter_thread
 from .analysis import RevolutionCalculator
@@ -28,8 +28,8 @@ def main():
     #serial = Serial('/dev/ttyUSB0', 9600)
     #serial = Serial('/dev/cu.usbmodem1411', 9600)
 
-    #reader = threading.Thread(target=serial_reader, args=(serial, events))
-    reader = threading.Thread(target=gpio_poller, args=(22, events))
+    #reader = SerialReader(serial, events)
+    reader = GpioReader(22, events)
     reader.daemon = True
     reader.start()
 
