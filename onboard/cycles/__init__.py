@@ -5,16 +5,18 @@ import threading
 from serial import Serial
 import os
 
-from .events import EventManager, RevolutionEvent
+from .events import EventManager, RevolutionEvent, SessionStartEvent, SessionEndEvent
 from .sensors import GpioReader, SerialReader
-from .logger import file_persister
+from .logger import FileLogger
 from .reporter import reporter_thread
 from .analysis import RevolutionCalculator
 from .stream import websocket_server
+from .sessions import SessionWatcher
 
 def main():
-    persist_file_path = os.path.expanduser('~/cycles.txt')
-    persist_file = open(persist_file_path, 'a', buffering=1)
+    persist_path = os.path.expanduser('~/cycles')
+    if not os.path.isdir(persist_path):
+        os.makedirs(persist_path)
 
     log_queue = Queue()
 
@@ -29,6 +31,11 @@ def main():
     events.on(RevolutionEvent, lambda e: log_queue.put(e))
     events.on(RevolutionEvent, lambda e: calc.record_revolutions(e.timestamp))
 
+    events.on(SessionStartEvent, lambda e: log_queue.put(e))
+    events.on(SessionEndEvent, lambda e: log_queue.put(e))
+
+    #events.on(PauseEvent, lambda e: log_queue.put(e))
+
     #serial = Serial('/dev/ttyACM0', 9600)
     #serial = Serial('/dev/ttyUSB0', 9600)
     #serial = Serial('/dev/cu.usbmodem1411', 9600)
@@ -38,7 +45,7 @@ def main():
     reader.daemon = True
     reader.start()
 
-    logger = threading.Thread(target=file_persister, args=(log_queue, persist_file))
+    logger = FileLogger(log_queue, persist_path)
     logger.daemon = True
     logger.start()
 
@@ -55,6 +62,4 @@ def main():
             reader.join(1)
     except KeyboardInterrupt:
         print("Stopping")
-
-    persist_file.close()
 
