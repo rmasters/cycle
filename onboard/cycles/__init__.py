@@ -21,6 +21,11 @@ def main():
     calc = RevolutionCalculator(wheel_radius_cm=13.0)
 
     events = EventManager()
+    session = SessionWatcher(events)
+    session.daemon = True
+    session.start()
+
+    events.on(RevolutionEvent, lambda e: session.on_revolution(e))
     events.on(RevolutionEvent, lambda e: log_queue.put(e))
     events.on(RevolutionEvent, lambda e: calc.record_revolutions(e.timestamp))
 

@@ -12,8 +12,9 @@ class BaseReader(threading.Thread):
 
     def run(self):
         for timestamp in self.timestamp_generator():
+            # Send the crank event
             event = RevolutionEvent(timestamp)
-            events.emit(event)
+            self.events.emit(event)
 
     def timestamp_generator(self):
         """
@@ -29,7 +30,7 @@ class SerialReader(BaseReader):
 
         self.serial = serial
 
-   def timestamp_generator(self):
+    def timestamp_generator(self):
         start_time = datetime.utcnow()
         while True:
             line = serial.readline().decode()
@@ -55,6 +56,7 @@ class GpioReader(BaseReader):
 
     def timestamp_generator(self):
         with InputDevice(self.pin) as p:
+            prev_value = None
             while True:
                 if p.value and not prev_value:
                     yield datetime.utcnow()

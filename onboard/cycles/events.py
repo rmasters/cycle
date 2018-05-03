@@ -36,11 +36,18 @@ class RevolutionEvent:
 
 
 class SessionStartEvent:
-    pass
+    def __init__(self, started_at):
+        self.started_at = started_at
 
 
 class SessionEndEvent:
-    pass
+    def __init__(self, ended_at):
+        self.ended_at = ended_at
+
+
+class PauseEvent:
+    def __init__(self, paused_at):
+        self.paused_at = paused_at
 
 class StopEvent:
     pass
