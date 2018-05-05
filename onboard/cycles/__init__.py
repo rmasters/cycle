@@ -4,6 +4,7 @@ import time
 import threading
 from serial import Serial
 import os
+from gpiozero import DigitalOutputDevice
 
 from .events import EventManager, RevolutionEvent, SessionStartEvent, SessionEndEvent
 from .sensors import GpioReader, SerialReader
@@ -27,9 +28,12 @@ def main():
     session.daemon = True
     session.start()
 
+    output_pin = DigitalOutputDevice(26)
+
     events.on(RevolutionEvent, lambda e: session.on_revolution(e))
     events.on(RevolutionEvent, lambda e: log_queue.put(e))
     events.on(RevolutionEvent, lambda e: calc.record_revolutions(e.timestamp))
+    events.on(RevolutionEvent, lambda e: output_pin.blink(on_time=0.1, off_time=0, n=1, background=True)) 
 
     events.on(SessionStartEvent, lambda e: log_queue.put(e))
     events.on(SessionEndEvent, lambda e: log_queue.put(e))
